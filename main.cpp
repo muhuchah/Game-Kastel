@@ -1,4 +1,4 @@
-// In The Name Of God
+ // In The Name Of God
 // Game Kastel
 // Muhammad Hussain Chahkandi
 
@@ -9,7 +9,6 @@
 using namespace std;
 
 void start();
-void help();
 void gameSetting();
 void runGame( int, int, int );
 void dealCard( int (&)[90], int (&)[90] );
@@ -69,8 +68,13 @@ public :
     }
     void setShowCard( int cardsNumber, int cardsChar, int numberOfShowCard )
     {
-        showCardNumber[numberOfShowCard-1] = cardsNumber;
-        showCardChar[numberOfShowCard-1] = cardsChar;
+        if( cardsChar == showCardChar[numberOfShowCard-1] )
+        {
+            showCardNumber[numberOfShowCard-1] = cardsNumber;
+            //showCardChar[numberOfShowCard-1] = cardsChar;
+        }
+        else
+            cout << "Not Allowed" << endl;
     }
     void showShowCards()
     {
@@ -110,24 +114,65 @@ public :
     {
         return handCardChar[numberOfCard - 1];
     }
-    int score()
+    void setScore( int hm )
     {
-        int temp;
-        for( int i = 0; i < numberOfShowCards; i++ )
-        {
-            temp = 0;
-            temp += showCardNumber[i];
-        }
-        return temp;
+        score += hm;
     }
     int getScore()
     {
-        return score();
+        return score;
+    }
+    int showCardsScore()
+    {
+        int temp{};
+        bool y = false, s = false, m = false;
+        for( int i = 0; i < numberOfShowCards; i++ )
+        {
+            if( showCardChar[i] == 1 )
+                y = true;
+            if( showCardChar[i] == 2 )
+                s = true;
+            if( showCardChar[i] == 3 )
+                m = true;
+        }
+        for( int i = 0; i < numberOfShowCards; i++ )
+             temp += showCardNumber[i];
+        if( y && s && m )
+            return temp;
+        else
+            return 0;
+    }
+    void restartNumberOfShowCards()
+    {
+        numberOfShowCards = 0;
+    }
+    void hk()
+    {
+        int temp, temp2;
+        for( int i = 0; i < numberOfShowCards - 1; i++ )
+        {
+            temp = showCardNumber[i];
+            temp2 = showCardChar[i];
+            for( int j = i+1; j < numberOfShowCards; j++ )
+            {
+                if( temp == showCardNumber[j] )
+                {
+                    if( temp2 == showCardChar[j] )
+                    {
+                        for( int p = j; p < numberOfShowCards - 1; p++ )
+                        {
+                            showCardNumber[p] = showCardNumber[p+1];
+                            showCardChar[p] = showCardChar[p+1];
+                        }
+                    }
+                }
+            }
+        }
     }
 private :
     int handCardNumber[3], handCardChar[3];
     int showCardNumber[6], showCardChar[6];
-    int numberOfShowCards{};
+    int score{}, numberOfShowCards{};
     char name[30];
 };
 
@@ -135,7 +180,6 @@ int main()
 {
     cout << "++++++++ Game Kastel ++++++++\n" << endl
          << "1-- Start" << endl
-         << "2-- Help " << endl
          << "0-- Exit " << endl
          << "Please Enter Your Choice --> ";
     int enter;
@@ -144,9 +188,6 @@ int main()
         exit(0);
     if( enter == 1 )
         start();
-    else
-        help();
-
     return 0;
 }
 
@@ -154,12 +195,6 @@ void start()
 {
     gameSetting();
 }
-
-void help()
-{
-
-}
-
 void gameSetting()
 {
     system("cls");
@@ -182,7 +217,7 @@ void gameSetting()
    cin >> victoryScore;
    cout << "\n* Which Mode *" << endl
         << "1-- Standard Mode \n"
-        << "2-- Pro Mode \n"
+        << "2-- Pro Mode (Not Available)\n"
         << "--> ";
    int gameMode;
    cin >> gameMode;
@@ -195,8 +230,10 @@ void runGame( int numberOfPlayers, int victoryScore, int gameMode )
     int cardsNumber[90], cardsChar[90], roundCounter = 1, maxScore{}, starterNumber = 1;
     players player1, player2, player3, player4, player5, player6;
 
+    while ( maxScore < victoryScore ) {
     dealCard( cardsNumber, cardsChar );
     int dealCounter{};
+    bool sixShowCards = false;
     switch ( numberOfPlayers )
     {
         case 6:
@@ -232,20 +269,24 @@ void runGame( int numberOfPlayers, int victoryScore, int gameMode )
                     player2.setHandCards( cardsNumber[i], cardsChar[i], i-3 );
             }
     }
-    while( maxScore < victoryScore && dealCounter <= 90 ) // whole game in this while
+    while( maxScore < victoryScore && dealCounter <= 90 && !sixShowCards )
     {
         system("cls");
         cout << "*** Round " << roundCounter << " ***\n";
 
         cin.get();
-        for( int i = 1; i <= numberOfPlayers; i++ ) // every players turn in a round in this function
+        for( int i = 1; i <= numberOfPlayers; i++ )
         {
+            if( maxScore >= victoryScore || dealCounter > 90 || sixShowCards )
+                break;
             system("cls");
+            cout << "*** Round " << roundCounter << " ***\n";
             cout << "!!!! Player Number " << i << " !!!!" << endl;
             cout << "Press Enter If You're Player Number " << i << endl;
             cin.get();
             cin.get();
             system("cls");
+            cout << "*** Round " << roundCounter << " ***\n";
             cout << "!!!! Player Number " << i << " !!!!" << endl;
             cout << "Player Number " << i << " Hand Cards " << endl;
             switch ( i )
@@ -294,6 +335,8 @@ void runGame( int numberOfPlayers, int victoryScore, int gameMode )
                         break;
                 }
             }
+            if( maxScore >= victoryScore || dealCounter > 90 || sixShowCards )
+                break;
             int chosenHandCard, chosenPlayer, chosenShowCard, numberOfShowCards;
             cout << "Choose One Of Your Hand Cards!!" << endl;
             cin >> chosenHandCard;
@@ -301,102 +344,182 @@ void runGame( int numberOfPlayers, int victoryScore, int gameMode )
             cin >> chosenPlayer;
             cout << "Choose Number Of Show Card!!" << endl;
             cin >> chosenShowCard;
-
+            int arg1, arg2;
+            switch ( i )
+            {
+                case 1:
+                    arg1 = player1.getHandCardNumber( chosenHandCard );
+                    arg2 = player1.getHandCardChar( chosenHandCard );
+                    break;
+                case 2:
+                    arg1 = player2.getHandCardNumber( chosenHandCard );
+                    arg2 = player2.getHandCardChar( chosenHandCard );
+                    break;
+                case 3:
+                    arg1 = player3.getHandCardNumber( chosenHandCard );
+                    arg2 = player3.getHandCardChar( chosenHandCard );
+                    break;
+                case 4:
+                    arg1 = player4.getHandCardNumber( chosenHandCard );
+                    arg2 = player4.getHandCardChar( chosenHandCard );
+                    break;
+                case 5:
+                    arg1 = player5.getHandCardNumber( chosenHandCard );
+                    arg2 = player5.getHandCardChar( chosenHandCard );
+                    break;
+                case 6:
+                    arg1 = player6.getHandCardNumber( chosenHandCard );
+                    arg2 = player6.getHandCardChar( chosenHandCard );
+                    break;
+            }
             switch( chosenPlayer )
             {
                 case 1:
                     numberOfShowCards = player1.getNumberOfShowCards();
                     if( chosenShowCard <= numberOfShowCards )
-                        player1.setShowCard( player1.getHandCardNumber( chosenHandCard ),  player1.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player1.setShowCard( arg1,  arg2, chosenShowCard);
                     else
-                        player1.newShowCard( player1.getHandCardNumber( chosenHandCard ), player1.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player1.newShowCard( arg1, arg2, chosenShowCard);
                     player1.setHandCards( cardsNumber[dealCounter], cardsChar[dealCounter], chosenHandCard - 1 );
                     dealCounter++;
                     break;
                 case 2:
                     numberOfShowCards = player2.getNumberOfShowCards();
                     if( chosenShowCard <= numberOfShowCards )
-                        player2.setShowCard( player2.getHandCardNumber( chosenHandCard ),  player2.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player2.setShowCard( arg1,  arg2, chosenShowCard);
                     else
-                        player2.newShowCard( player2.getHandCardNumber( chosenHandCard ), player2.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player2.newShowCard( arg1, arg2, chosenShowCard);
                     player2.setHandCards( cardsNumber[dealCounter], cardsChar[dealCounter], chosenHandCard - 1 );
                     dealCounter++;
                     break;
                 case 3:
                     numberOfShowCards = player3.getNumberOfShowCards();
                     if( chosenShowCard <= numberOfShowCards )
-                        player3.setShowCard( player3.getHandCardNumber( chosenHandCard ),  player3.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player3.setShowCard( arg1,  arg2, chosenShowCard);
                     else
-                        player3.newShowCard( player3.getHandCardNumber( chosenHandCard ), player3.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player3.newShowCard( arg1, arg2, chosenShowCard);
                     player3.setHandCards( cardsNumber[dealCounter], cardsChar[dealCounter], chosenHandCard - 1 );
                     dealCounter++;
                     break;
                 case 4:
                     numberOfShowCards = player4.getNumberOfShowCards();
                     if( chosenShowCard <= numberOfShowCards )
-                        player4.setShowCard( player4.getHandCardNumber( chosenHandCard ),  player4.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player4.setShowCard( arg1,  arg2, chosenShowCard);
                     else
-                        player4.newShowCard( player4.getHandCardNumber( chosenHandCard ), player4.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player4.newShowCard( arg1, arg2, chosenShowCard);
                     player4.setHandCards( cardsNumber[dealCounter], cardsChar[dealCounter], chosenHandCard - 1 );
                     dealCounter++;
                     break;
                 case 5:
                     numberOfShowCards = player5.getNumberOfShowCards();
                     if( chosenShowCard <= numberOfShowCards )
-                        player5.setShowCard( player5.getHandCardNumber( chosenHandCard ),  player5.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player5.setShowCard( arg1,  arg2, chosenShowCard);
                     else
-                        player5.newShowCard( player5.getHandCardNumber( chosenHandCard ), player5.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player5.newShowCard( arg1, arg2, chosenShowCard);
                     player5.setHandCards( cardsNumber[dealCounter], cardsChar[dealCounter], chosenHandCard - 1 );
                     dealCounter++;
                     break;
                 case 6:
                     numberOfShowCards = player6.getNumberOfShowCards();
                     if( chosenShowCard <= numberOfShowCards )
-                        player6.setShowCard( player6.getHandCardNumber( chosenHandCard ),  player6.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player6.setShowCard( arg1, arg2, chosenShowCard);
                     else
-                        player6.newShowCard( player6.getHandCardNumber( chosenHandCard ), player6.getHandCardChar( chosenHandCard ), chosenShowCard);
+                        player6.newShowCard( arg1, arg2, chosenShowCard);
                     player6.setHandCards( cardsNumber[dealCounter], cardsChar[dealCounter], chosenHandCard - 1 );
                     dealCounter++;
                     break;
             }
+
             int tmp;
             switch ( i )
             {
                 case 1:
-                    tmp = player1.score();
+                    tmp = player1.getScore() + player1.showCardsScore();
                     if( tmp > maxScore )
                         maxScore = tmp;
+                    if( player1.getNumberOfShowCards() >= 6 )
+                        sixShowCards = true;
                     break;
                 case 2:
-                    tmp = player2.score();
+                    tmp = player2.getScore() + player2.showCardsScore();
                     if( tmp > maxScore )
                         maxScore = tmp;
+                    if( player2.getNumberOfShowCards() >= 6 )
+                        sixShowCards = true;
                     break;
                 case 3:
-                    tmp = player3.score();
+                    tmp = player3.getScore() + player3.showCardsScore();
                     if( tmp > maxScore )
                         maxScore = tmp;
+                    if( player3.getNumberOfShowCards() >= 6 )
+                        sixShowCards = true;
                     break;
                 case 4:
-                    tmp = player4.score();
+                    tmp = player4.getScore() + player4.showCardsScore();
                     if( tmp > maxScore )
                         maxScore = tmp;
+                    if( player4.getNumberOfShowCards() >= 6 )
+                        sixShowCards = true;
                     break;
                 case 5:
-                    tmp = player5.score();
+                    tmp = player5.getScore() + player5.showCardsScore();
                     if( tmp > maxScore )
                         maxScore = tmp;
+                    if( player5.getNumberOfShowCards() >= 6 )
+                        sixShowCards = true;
                     break;
                 case 6:
-                    tmp = player6.score();
+                    tmp = player6.getScore() + player6.showCardsScore();
                     if( tmp > maxScore )
                         maxScore = tmp;
+                    if( player6.getNumberOfShowCards() >= 6 )
+                        sixShowCards = true;
                     break;
             }
-            if( maxScore >= victoryScore || dealCounter > 90 )
+            if( maxScore >= victoryScore || dealCounter > 90 || sixShowCards )
                 break;
         }
-        roundCounter++;
+        if( maxScore >= victoryScore || dealCounter > 90 || sixShowCards )
+            break;
+    }
+    for( int i = 1; i <= numberOfPlayers; i++ )
+    {
+        int roundScore;
+        switch ( i )
+        {
+            case 1:
+                roundScore = player1.showCardsScore();
+                player1.setScore( roundScore );
+                player1.restartNumberOfShowCards();
+                break;
+            case 2:
+                roundScore = player2.showCardsScore();
+                player2.setScore( roundScore );
+                player2.restartNumberOfShowCards();
+                break;
+            case 3:
+                roundScore = player3.showCardsScore();
+                player3.setScore( roundScore );
+                player3.restartNumberOfShowCards();
+                break;
+            case 4:
+                roundScore = player4.showCardsScore();
+                player4.setScore( roundScore );
+                player4.restartNumberOfShowCards();
+                break;
+            case 5:
+                roundScore = player5.showCardsScore();
+                player5.setScore( roundScore );
+                player5.restartNumberOfShowCards();
+                break;
+            case 6:
+                roundScore = player6.showCardsScore();
+                player6.setScore( roundScore );
+                player6.restartNumberOfShowCards();
+                break;
+        }
+    }
+    roundCounter++;
     }
     system("cls");
     for( int i = 1; i <= numberOfPlayers; i++ )
@@ -438,81 +561,81 @@ void runGame( int numberOfPlayers, int victoryScore, int gameMode )
 }
 void printYavarCard1Digit( int n )
 {
-    cout << " _ _ _ _ _ _ _ _ " << endl
-        << "| "<< n << "             |" << endl
-        << "|    |     |    |" << endl
-        << "|    |     |    |" << endl
-        << "|    |_ _ _|    |" << endl
-        << "|          |    |" << endl
-        << "|          |    |" << endl
-        << "|     _ _ _|    |" << endl
-        << "|             "<< n << " |" << endl
-        << "|_ _ _ _ _ _ _ _|" << endl;
+    cout << "\t _ _ _ _ _ _ _ _ " << endl
+        << "\t| "<< n << "             |" << endl
+        << "\t|    |     |    |" << endl
+        << "\t|    |     |    |" << endl
+        << "\t|    |_ _ _|    |" << endl
+        << "\t|          |    |" << endl
+        << "\t|          |    |" << endl
+        << "\t|     _ _ _|    |" << endl
+        << "\t|             "<< n << " |" << endl
+        << "\t|_ _ _ _ _ _ _ _|" << endl;
 }
 void printYavarCard2Digits( int n )
 {
-    cout << " _ _ _ _ _ _ _ _ " << endl
-        << "| "<< n << "            |" << endl
-        << "|    |     |    |" << endl
-        << "|    |     |    |" << endl
-        << "|    |_ _ _|    |" << endl
-        << "|          |    |" << endl
-        << "|          |    |" << endl
-        << "|     _ _ _|    |" << endl
-        << "|            "<< n << " |" << endl
-        << "|_ _ _ _ _ _ _ _|" << endl;
+    cout << "\t _ _ _ _ _ _ _ _ " << endl
+        << "\t| "<< n << "            |" << endl
+        << "\t|    |     |    |" << endl
+        << "\t|    |     |    |" << endl
+        << "\t|    |_ _ _|    |" << endl
+        << "\t|          |    |" << endl
+        << "\t|          |    |" << endl
+        << "\t|     _ _ _|    |" << endl
+        << "\t|            "<< n << " |" << endl
+        << "\t|_ _ _ _ _ _ _ _|" << endl;
 }
 void printSafiCard1Digit( int n )
 {
-    cout << " _ _ _ _ _ _ _ _ " << endl
-         << "| "<< n << "   _ _ _     |" << endl
-         << "|    |     |    |" << endl
-         << "|    |          |" << endl
-         << "|    |_ _ _     |" << endl
-         << "|          |    |" << endl
-         << "|          |    |" << endl
-         << "|    |_ _ _|    |" << endl
-         << "|             "<< n << " |" << endl
-         << "|_ _ _ _ _ _ _ _|" << endl;
+    cout << "\t _ _ _ _ _ _ _ _ " << endl
+         << "\t| "<< n << "   _ _ _     |" << endl
+         << "\t|    |     |    |" << endl
+         << "\t|    |          |" << endl
+         << "\t|    |_ _ _     |" << endl
+         << "\t|          |    |" << endl
+         << "\t|          |    |" << endl
+         << "\t|    |_ _ _|    |" << endl
+         << "\t|             "<< n << " |" << endl
+         << "\t|_ _ _ _ _ _ _ _|" << endl;
 }
 void printSafiCard2Digits( int n )
 {
-    cout << " _ _ _ _ _ _ _ _ " << endl
-         << "| "<< n << "  _ _ _     |" << endl
-         << "|    |     |    |" << endl
-         << "|    |          |" << endl
-         << "|    |_ _ _     |" << endl
-         << "|          |    |" << endl
-         << "|          |    |" << endl
-         << "|    |_ _ _|    |" << endl
-         << "|            "<< n << " |" << endl
-         << "|_ _ _ _ _ _ _ _|" << endl;
+    cout << "\t _ _ _ _ _ _ _ _ " << endl
+         << "\t| "<< n << "  _ _ _     |" << endl
+         << "\t|    |     |    |" << endl
+         << "\t|    |          |" << endl
+         << "\t|    |_ _ _     |" << endl
+         << "\t|          |    |" << endl
+         << "\t|          |    |" << endl
+         << "\t|    |_ _ _|    |" << endl
+         << "\t|            "<< n << " |" << endl
+         << "\t|_ _ _ _ _ _ _ _|" << endl;
 }
 void printMofradCard1Digit( int n )
 {
-    cout << " _ _ _ _ _ _ _ _ " << endl
-         << "| "<< n << "             |" << endl
-         << "|               |" << endl
-         << "|   |\\    /|    |" << endl
-         << "|   | \\  / |    |" << endl
-         << "|   |  \\/  |    |" << endl
-         << "|   |      |    |" << endl
-         << "|               |" << endl
-         << "|             "<< n << " |" << endl
-         << "|_ _ _ _ _ _ _ _|" << endl;
+    cout << "\t _ _ _ _ _ _ _ _ " << endl
+         << "\t| "<< n << "             |" << endl
+         << "\t|               |" << endl
+         << "\t|   |\\    /|    |" << endl
+         << "\t|   | \\  / |    |" << endl
+         << "\t|   |  \\/  |    |" << endl
+         << "\t|   |      |    |" << endl
+         << "\t|               |" << endl
+         << "\t|             "<< n << " |" << endl
+         << "\t|_ _ _ _ _ _ _ _|" << endl;
 }
 void printMofradCard2Digits( int n )
 {
-    cout << " _ _ _ _ _ _ _ _ " << endl
-         << "| "<< n << "            |" << endl
-         << "|               |" << endl
-         << "|   |\\    /|    |" << endl
-         << "|   | \\  / |    |" << endl
-         << "|   |  \\/  |    |" << endl
-         << "|   |      |    |" << endl
-         << "|               |" << endl
-         << "|            "<< n << " |" << endl
-         << "|_ _ _ _ _ _ _ _|" << endl;
+    cout << "\t _ _ _ _ _ _ _ _ " << endl
+         << "\t| "<< n << "            |" << endl
+         << "\t|               |" << endl
+         << "\t|   |\\    /|    |" << endl
+         << "\t|   | \\  / |    |" << endl
+         << "\t|   |  \\/  |    |" << endl
+         << "\t|   |      |    |" << endl
+         << "\t|               |" << endl
+         << "\t|            "<< n << " |" << endl
+         << "\t|_ _ _ _ _ _ _ _|" << endl;
 }
 
 void dealCard( int (&cardsNumber)[90], int (&cardsChar)[90] )
@@ -582,6 +705,4 @@ void dealCard( int (&cardsNumber)[90], int (&cardsChar)[90] )
         cardsNumber[i] = temp[i];
         cardsChar[i] = temp1[i];
     }
-    // for( int i = 0; i < 90; i++ )
-    //     cout << cardsNumber[i] << ' ' << cardsChar[i] << "\t";
 }
