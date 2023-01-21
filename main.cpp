@@ -21,6 +21,11 @@ void printMofradCard2Digits( int );
 
 class players
 {
+private :
+    int handCardNumber[3], handCardChar[3];
+    int showCardNumber[6], showCardChar[6];
+    int score{}, numberOfShowCards{};
+    char name[30];
 public :
     void setHandCards( int cardsNumber, int cardsChar, int i )
     {
@@ -70,8 +75,7 @@ public :
     {
         if( cardsChar == showCardChar[numberOfShowCard-1] )
         {
-            showCardNumber[numberOfShowCard-1] = cardsNumber;
-            //showCardChar[numberOfShowCard-1] = cardsChar;
+            showCardNumber[numberOfShowCard-1] = cardsNumber
         }
         else
             cout << "Not Allowed" << endl;
@@ -169,11 +173,6 @@ public :
             }
         }
     }
-private :
-    int handCardNumber[3], handCardChar[3];
-    int showCardNumber[6], showCardChar[6];
-    int score{}, numberOfShowCards{};
-    char name[30];
 };
 
 int main()
@@ -198,28 +197,34 @@ void start()
 void gameSetting()
 {
     system("cls");
+
+    int numberOfPlayers, victoryScore, gameMode;
+
     cout << "++++++++ Game Setting ++++++++\n" << endl
         << "Number of Players ( 2 to 6 ) : ";
-   int numberOfPlayers;
+
    cin >> numberOfPlayers;
-   if( numberOfPlayers < 2 )
-    {
-        cout << "!! You Need More Players !!";
-        gameSetting();
+   {   // CHECK IF NUMBER OF PLAYERS IS VALID
+        if( numberOfPlayers < 2 )
+        {
+            cout << "!! You Need More Players !!";
+            gameSetting();
+        }
+        else if( numberOfPlayers > 6 )
+        {
+            cout << "!! Too Many Players !!";
+            gameSetting();
+        }
     }
-    else if( numberOfPlayers > 6 )
-    {
-        cout << "!! Too Many Players !!";
-        gameSetting();
-    }
-   cout << "\nFinish Score : ";
-   int victoryScore;
+
+   cout << "\nFinish Score :
    cin >> victoryScore;
-   cout << "\n* Which Mode *" << endl
+
+   cout << "\n* Game Mode *" << endl
         << "1-- Standard Mode \n"
         << "2-- Pro Mode (Not Available)\n"
         << "--> ";
-   int gameMode;
+
    cin >> gameMode;
 
     runGame( numberOfPlayers, victoryScore, gameMode );
@@ -519,6 +524,45 @@ void runGame( int numberOfPlayers, int victoryScore, int gameMode )
                 break;
         }
     }
+    for( int i = 0; i < numberOfPlayers; i++ )
+    {
+            int tmp;
+            switch ( i )
+            {
+                case 1:
+                    tmp = player1.getScore();
+                    if( tmp > maxScore )
+                        maxScore = tmp;
+                    break;
+                case 2:
+                    tmp = player2.getScore();
+                    if( tmp > maxScore )
+                        maxScore = tmp;
+                    break;
+                case 3:
+                    tmp = player3.getScore();
+                    if( tmp > maxScore )
+                        maxScore = tmp;
+                    break;
+                case 4:
+                    tmp = player4.getScore();
+                    if( tmp > maxScore )
+                        maxScore = tmp;
+                    break;
+                case 5:
+                    tmp = player5.getScore();
+                    if( tmp > maxScore )
+                        maxScore = tmp;
+                    break;
+                case 6:
+                    tmp = player6.getScore();
+                    if( tmp > maxScore )
+                        maxScore = tmp;
+                    break;
+            }
+    }
+    if( maxScore >= victoryScore )
+        break;
     roundCounter++;
     }
     system("cls");
